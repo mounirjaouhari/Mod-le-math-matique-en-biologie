@@ -1,0 +1,87 @@
+<jsxgraph width="700" height="600" box="box">
+var brd = JXG.JSXGraph.initBoard('box', {axis: true, boundingbox: [-4, 1.25, 114, -1.25]});
+
+var S = brd.createElement('turtle',[],{strokeColor:'blue',strokeWidth:3});
+var E = brd.createElement('turtle',[],{strokeColor:'black',strokeWidth:3});
+var I = brd.createElement('turtle',[],{strokeColor:'red',strokeWidth:3});
+var R = brd.createElement('turtle',[],{strokeColor:'green',strokeWidth:3});
+            
+var s = brd.createElement('slider', [[0,-0.3], [30,-0.3],[0,1.27E-6,1]], {name:'s'});
+var beta = brd.createElement('slider', [[0,-0.4], [30,-0.4],[0,0.5,1]], {name:'&beta;'});
+var gamma = brd.createElement('slider', [[0,-0.5], [30,-0.5],[0,0.3,1]], {name:'&gamma;'});
+var mu = brd.createElement('slider', [[0,-0.6], [30,-0.6],[0,0.0,1]], {name:'&mu;'});
+var a = brd.createElement('slider', [[0,-0.7], [30,-0.7],[0,1.0,1]], {name:'a'});
+
+brd.createElement('text', [40,-0.3, "initially infected population rate (on load: I(0)=1.27E-6)"]);
+brd.createElement('text', [40,-0.4, "&beta;: infection rate"]);
+brd.createElement('text', [40,-0.5, "&gamma;: recovery rate = 1/(days of infection)"]);
+
+var t = 0; // global
+
+brd.createElement('text', [40,-0.2, 
+        function() {return "Day "+t+": infected="+(7900000*I.Y()).toFixed(1)+" recovered="+(7900000*R.Y()).toFixed(1);}]);
+
+
+S.hideTurtle();
+E.hideTurtle();
+I.hideTurtle();
+R.hideTurtle();
+
+function clearturtle() {
+  S.cs();
+  E.cs();
+  I.cs();
+  R.cs();
+
+  S.hideTurtle();
+  E.hideTurtle();
+  I.hideTurtle();
+  R.hideTurtle();
+}
+            
+function run() {
+  S.setPos(0,1.0-s.Value());
+  I.setPos(0,s.Value());
+  R.setPos(0,0);
+  E.setPos(0,0);
+                
+  delta = 1; // global
+  t = 0;  // global
+  loop();
+}
+             
+function turtleMove(turtle,dx,dy) {
+  turtle.moveTo([dx+turtle.X(),dy+turtle.Y()]);
+}
+             
+function loop() {
+  var dS = mu.Value()*(1.0-S.Y())-beta.Value()*I.Y()*S.Y(); 
+  var dE = beta.Value()*I.Y()*S.Y()-(mu.Value()+a.Value())*E.Y();
+  var dI = a.Value()*E.Y()-(gamma.Value()+mu.Value())*I.Y();
+  var dR = gamma.Value()*I.Y()-mu.Value()*R.Y();
+  turtleMove(S,delta,dS);
+  turtleMove(E,delta,dE);
+  turtleMove(I,delta,dI);
+  turtleMove(R,delta,dR);
+                
+  t += delta;
+  if (t<100.0) {
+    active = setTimeout(loop,10);
+  }
+}
+
+function stop() {
+  if (active) clearTimeout(active);
+  active = null;
+}
+function goOn() {
+   if (t>0) {
+     if (active==null) {
+       active = setTimeout(loop,10);
+     }
+   } else {
+     run();
+   }
+
+}
+</jsxgraph>
